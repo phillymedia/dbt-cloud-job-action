@@ -195,10 +195,9 @@ async function cleanupAction() {
 
   // get the job status
   let res = await getJobRun(account_id, run_id);
-  let isComplete = run_status[res.data.is_complete];
 
   // if it is running and we wanted to wait for the end of the job, cancel it
-  if ((! isComplete) && core.getBooleanInput('wait_for_job')) {
+  if ((! res.data.is_complete) && core.getBooleanInput('wait_for_job')) {
     core.info('Cancelling job...')
     await dbt_cloud_api.post(`/accounts/${account_id}/runs/${run_id}/cancel/`);
   } else {
