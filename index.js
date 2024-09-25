@@ -1,6 +1,7 @@
 const axios = require('axios');
 const core = require('@actions/core');
 const fs = require('fs');
+const os = require('os');
 const axiosRetry = require('axios-retry');
 const YAML = require('yaml')
 
