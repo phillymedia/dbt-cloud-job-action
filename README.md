@@ -41,31 +41,7 @@ Use any of the [documented options for the dbt API](https://docs.getdbt.com/dbt-
 ### Trigger a job and override the steps
 
 ```yaml
-name: Run dbt cloud
-on:
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: fal-ai/dbt-cloud-action@main
-        id: dbt_cloud_run
-        with:
-          dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
-          dbt_cloud_account_id: ${{ secrets.DBT_CLOUD_ACCOUNT_ID }}
-          dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
-          failure_on_error: true
-          steps_override: |
-            - dbt build -s my_model+
-            - dbt docs generate
-```
-
-### Trigger a job and override the steps
-
-```yaml
-name: Run dbt cloud job
+name: Run dbt Cloud job
 on:
   workflow_dispatch:
 
@@ -92,7 +68,7 @@ This will trigger the CI job.
 If a new commit is pushed to the PR, the current job gets cancelled and a new one is created.
 
 ```yaml
-name: Run dbt cloud CI job
+name: Run dbt Cloud CI job
 on:
   pull_request:
 
