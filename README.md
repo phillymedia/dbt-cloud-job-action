@@ -1,8 +1,8 @@
 # dbt Cloud action
 
-This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), fetches the `run_results.json` artifact, and `git checkout`s the branch that was ran by dbt Cloud.
+Fork of https://github.com/fal-ai/dbt-cloud-action with additional capabilities as the original repo and action seem inactive.
 
-Example usage at [fal-ai/fal_bike_example](https://github.com/fal-ai/fal_bike_example)
+This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), fetches the `run_results.json` artifact, and `git checkout`s the branch that was ran by dbt Cloud.
 
 ## Inputs
 
@@ -36,7 +36,10 @@ Use any of the [documented options for the dbt API](https://docs.getdbt.com/dbt-
 - `timeout_seconds_override`
 - `steps_override`: pass a YAML-parseable string. (e.g. `steps_override: '["dbt seed", "dbt run"]'`)
 
-## Create your workflow
+## Examples
+
+### Trigger a job and override the steps
+
 ```yaml
 name: Run dbt cloud
 on:
@@ -55,18 +58,14 @@ jobs:
           dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
           failure_on_error: true
           steps_override: |
-            - dbt seed
-            - dbt run
+            - dbt build -s my_model+
+            - dbt docs generate
 ```
 
-### Use with [fal](https://github.com/fal-ai/fal)
-
-You can trigger a dbt Cloud run and it will download the artifacts to be able to run your `fal run` command easily in GitHub Actions.
-
-You have to do certain extra steps described here:
+### Trigger a job and override the steps
 
 ```yaml
-name: Run dbt cloud and fal scripts
+name: Run dbt cloud job
 on:
   workflow_dispatch:
 
@@ -75,64 +74,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout before downloading artifacts or setting profiles.yml
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - uses: fal-ai/dbt-cloud-action@main
-        id: dbt_cloud_run
+        id: dbt_cloud_job_run
         with:
           dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
-          dbt_cloud_account_id: ${{ secrets.DBT_ACCOUNT_ID }}
+          dbt_cloud_account_id: ${{ secrets.DBT_CLOUD_ACCOUNT_ID }}
           dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
-          failure_on_error: false
-
-      - name: Setup profiles.yml
-        shell: python
-        env:
-          contents: ${{ secrets.PROFILES_YML }}
-        run: |
-          import yaml
-          import os
-          import io
-
-          profiles_string = os.getenv('contents')
-          profiles_data = yaml.safe_load(profiles_string)
-
-          with io.open('profiles.yml', 'w', encoding='utf8') as outfile:
-            yaml.dump(profiles_data, outfile, default_flow_style=False, allow_unicode=True)
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.9.x"
-
-      - name: Install dependencies
-        # Normally would use a `requirements.txt`.
-        run: |
-          pip install dbt-bigquery
-          pip install fal[bigquery]
-
-      - name: Run fal scripts
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_BOT_CHANNEL: ${{ secrets.SLACK_BOT_CHANNEL }}
-        run: |
-          # Move to the same code state of the dbt Cloud Job
-          git checkout ${{ steps.dbt_cloud_run.outputs.git_sha }}
-          # TODO: review target in passed profiles.yaml contents
-          fal run --profiles-dir .
-
+          failure_on_error: true
+          steps_override: |
+            - dbt build -s my_model+
+            - dbt docs generate
 ```
 
-#### Getting the correct artifacts from dbt-cloud
+### Trigger a CI job previously created
 
-fal relies on the generated artifacts from a dbt run step to get model statuses. dbt-cloud only makes these artifacts available after the **last** step finished running.
+This will trigger the CI job.
+If a new commit is pushed to the PR, the current job gets cancelled and a new one is created.
 
-In order to get the status information that you need for fal, make sure to run the step you are interested in **last**.
+```yaml
+name: Run dbt cloud CI job
+on:
+  pull_request:
 
-For example, this dbt job will provide the `run_results.json` of `dbt docs generate`, which is probably not what you want fal to report about:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
-![Example run](./example-run.png)
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-So, you would make `dbt docs generate` run before `dbt run` and leave `dbt run` as the last step.
+    steps:
+      - uses: fal-ai/dbt-cloud-action@main
+        id: dbt_cloud_ci_job_run
+        with:
+          dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
+          dbt_cloud_account_id: ${{ secrets.DBT_CLOUD_ACCOUNT_ID }}
+          dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
+          git_branch: ${{ github.head_ref }}
+          target_name_override: dbt_pr_${{ github.event.pull_request.number }}
+          cause: "CI job triggered from GH action"
+          failure_on_error: true
+```
