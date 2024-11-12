@@ -1,7 +1,7 @@
-name: "dbt Cloud action"
-description: "Runs a dbt Cloud Job specified by Job ID"
+name: "dbt Cloud Job action"
+description: "Runs a dbt Cloud Job specified by a Job ID and wait for its status"
 branding:
-  icon: "cloud"
+  icon: "external-link"
   color: "orange"
 inputs:
   dbt_cloud_url:
