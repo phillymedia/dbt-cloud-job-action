@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "rm -rf dist"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +18,9 @@
     "axios-retry": "^3.3.1",
     "node-fetch": ">=2.6.7",
     "yaml": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
   }
 }
