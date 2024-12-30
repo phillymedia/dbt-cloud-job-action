@@ -108,7 +108,11 @@ async function getJobRun(account_id, run_id) {
 
 async function getArtifacts(account_id, run_id) {
   let res = await dbt_cloud_api.get(`/accounts/${account_id}/runs/${run_id}/artifacts/run_results.json`);
+  let cat = await dbt_cloud_api.get(`/accounts/${account_id}/runs/${run_id}/artifacts/catalog.json`);
+  let maf = await dbt_cloud_api.get(`/accounts/${account_id}/runs/${run_id}/artifacts/manifest.json`);
   let run_results = res.data;
+  let catalog = cat.data;
+  let manifest = maf.data;
 
   core.info('Saving artifacts in target directory')
   const dir = './target';
@@ -118,6 +122,8 @@ async function getArtifacts(account_id, run_id) {
   }
 
   fs.writeFileSync(`${dir}/run_results.json`, JSON.stringify(run_results));
+  fs.writeFileSync(`${dir}/catalog.json`, JSON.stringify(catalog));
+  fs.writeFileSync(`${dir}/manifest.json`, JSON.stringify(manifest));
 }
 
 
