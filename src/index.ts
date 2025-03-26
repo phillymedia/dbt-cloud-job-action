@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from "axios";
+import axios from "axios";
+import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import * as core from "@actions/core";
 import * as fs from "fs";
 import * as os from "os";
@@ -46,12 +47,12 @@ interface ActionOutputs {
   run_id: number;
 }
 
-axiosRetry(axios, {
+(axiosRetry as any)(axios, {
   retryDelay: (retryCount: number) => retryCount * 1000,
   retries: 3,
   shouldResetTimeout: true,
-  onRetry: (_retryCount: number, _error: Error, _requestConfig: any) => {
-    console.error("Error in request. Retrying...");
+  onRetry: (retryCount: number, error: Error, requestConfig: AxiosRequestConfig) => {
+    console.error(`Error in request (attempt ${retryCount}). Retrying...`);
   },
 });
 
