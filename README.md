@@ -1,4 +1,4 @@
-# dbt Cloud action
+# dbt Cloud job action
 
 Fork of https://github.com/fal-ai/dbt-cloud-action with additional capabilities as the original repo and action seem inactive.
 
