@@ -27,7 +27,7 @@ inputs:
   get_artifacts:
     description: Whether run results, needed by fal, are fetched from dbt cloud. If using this action in other contexts this can be set to `false`, useful for jobs which do not generate artifacts.
     required: false
-    default: true
+    default: "true"
 
   cause:
     description: Job trigger cause
@@ -76,12 +76,11 @@ inputs:
   wait_for_job:
     description: Boolean for whether action should wait until dbt job finishes
     required: false
-    default: true
+    default: "true"
 
   github_pull_request_id:
     description: The github pull request id that triggered this job
     required: false
-
 
 outputs:
   git_sha:
@@ -90,5 +89,5 @@ outputs:
     description: "Run ID of the dbt Cloud Job that was triggered"
 runs:
   using: node20
-  main: "index.js"
-  post: "index.js"
+  main: "dist/index.js"
+  post: "dist/index.js"
