@@ -35,6 +35,7 @@ Use any of the [documented options for the dbt API](https://docs.getdbt.com/dbt-
 - `generate_docs_override`
 - `timeout_seconds_override`
 - `steps_override`: pass a YAML-parseable string. (e.g. `steps_override: '["dbt seed", "dbt run"]'`)
+- `github_pull_request_id`
 
 ## Examples
 
