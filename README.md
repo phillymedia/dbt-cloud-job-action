@@ -2,7 +2,7 @@
 
 Fork of https://github.com/fal-ai/dbt-cloud-action with additional capabilities as the original repo and action seem inactive.
 
-This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), fetches the `run_results.json` artifact, and `git checkout`s the branch that was ran by dbt Cloud.
+This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), fetches the `run_results.json`, `manifest.json` and `catalog.json` artifacts, and wait for the results of the job.
 
 ## Inputs
 
