@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: fal-ai/dbt-cloud-action@main
+      - uses: b-per/dbt-cloud-action@main
         id: dbt_cloud_job_run
         with:
           dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: fal-ai/dbt-cloud-action@main
+      - uses: b-per/dbt-cloud-action@main
         id: dbt_cloud_ci_job_run
         with:
           dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
@@ -90,6 +90,7 @@ jobs:
           dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
           git_branch: ${{ github.head_ref }}
           target_name_override: dbt_pr_${{ github.event.pull_request.number }}
+          github_pull_request_id: ${{ github.event.pull_request.number }}
           cause: "CI job triggered from GH action"
           failure_on_error: true
 ```
