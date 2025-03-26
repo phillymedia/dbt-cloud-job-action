@@ -1,95 +1,82 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = __importDefault(require("axios"));
-const core = __importStar(require("@actions/core"));
-const fs = __importStar(require("fs"));
-const os = __importStar(require("os"));
-const axios_retry_1 = __importDefault(require("axios-retry"));
-const yaml_1 = __importDefault(require("yaml"));
+const tslib_1 = require("tslib");
+const axios_1 = tslib_1.__importDefault(require("axios"));
+const core = tslib_1.__importStar(require("@actions/core"));
+const fs = tslib_1.__importStar(require("fs"));
+const os = tslib_1.__importStar(require("os"));
+const axios_retry_1 = tslib_1.__importDefault(require("axios-retry"));
+const yaml_1 = tslib_1.__importDefault(require("yaml"));
 (0, axios_retry_1.default)(axios_1.default, {
     retryDelay: (retryCount) => retryCount * 1000,
     retries: 3,
     shouldResetTimeout: true,
     onRetry: (_retryCount, _error, _requestConfig) => {
         console.error("Error in request. Retrying...");
-    }
+    },
 });
 const run_status = {
-    1: 'Queued',
-    2: 'Starting',
-    3: 'Running',
-    10: 'Success',
-    20: 'Error',
-    30: 'Cancelled'
+    1: "Queued",
+    2: "Starting",
+    3: "Running",
+    10: "Success",
+    20: "Error",
+    30: "Cancelled",
 };
 const dbt_cloud_api = axios_1.default.create({
-    baseURL: `${core.getInput('dbt_cloud_url')}/api/v2/`,
+    baseURL: `${core.getInput("dbt_cloud_url")}/api/v2/`,
     timeout: 5000,
     headers: {
-        'Authorization': `Token ${core.getInput('dbt_cloud_token')}`,
-        'Content-Type': 'application/json'
-    }
+        Authorization: `Token ${core.getInput("dbt_cloud_token")}`,
+        "Content-Type": "application/json",
+    },
 });
 function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 }
-const BOOL_OPTIONAL_KEYS = ['generate_docs_override'];
-const INTEGER_OPTIONAL_KEYS = ['threads_override', 'timeout_seconds_override'];
-const YAML_PARSE_OPTIONAL_KEYS = ['steps_override'];
-const STRING_PARSE_OPTIONAL_KEYS = ['git_sha', 'git_branch', 'schema_override', 'dbt_version_override', 'target_name_override'];
+const BOOL_OPTIONAL_KEYS = ["generate_docs_override"];
+const INTEGER_OPTIONAL_KEYS = [
+    "threads_override",
+    "timeout_seconds_override",
+    "github_pull_request_id",
+];
+const YAML_PARSE_OPTIONAL_KEYS = ["steps_override"];
+const STRING_PARSE_OPTIONAL_KEYS = [
+    "git_sha",
+    "git_branch",
+    "schema_override",
+    "dbt_version_override",
+    "target_name_override",
+];
 async function runJob(account_id, job_id) {
-    const cause = core.getInput('cause');
-    const body = { cause };
+    // Handle required inputs
+    const cause = core.getInput("cause");
+    const body = {
+        cause: cause,
+    };
     // Handle boolean inputs
     for (const key of BOOL_OPTIONAL_KEYS) {
         const input = core.getInput(key);
-        if (input !== '') {
+        if (input !== "") {
             body[key] = core.getBooleanInput(key);
         }
     }
     // Handle integer inputs
     for (const key of INTEGER_OPTIONAL_KEYS) {
         const input = core.getInput(key);
-        if (input !== '') {
+        if (input !== "") {
             body[key] = parseInt(input);
         }
     }
     // Handle YAML parse inputs
     for (const key of YAML_PARSE_OPTIONAL_KEYS) {
         const input = core.getInput(key);
-        if (input !== '') {
+        if (input !== "") {
             core.debug(input);
             try {
                 let parsedInput = yaml_1.default.parse(input);
-                if (typeof parsedInput === 'string') {
+                if (typeof parsedInput === "string") {
                     parsedInput = [parsedInput];
                 }
                 body[key] = parsedInput;
@@ -103,7 +90,7 @@ async function runJob(account_id, job_id) {
     // Handle string inputs
     for (const key of STRING_PARSE_OPTIONAL_KEYS) {
         const input = core.getInput(key);
-        if (input !== '') {
+        if (input !== "") {
             body[key] = input;
         }
     }
@@ -118,8 +105,11 @@ async function getJobRun(account_id, run_id) {
     }
     catch (e) {
         const errorMsg = e instanceof Error ? e.toString() : String(e);
-        if (errorMsg.search("timeout of ") !== -1 && errorMsg.search(" exceeded") !== -1) {
-            console.error("Error getting job information from dbt Cloud. " + errorMsg + ". The dbt Cloud API is taking too long to respond.");
+        if (errorMsg.search("timeout of ") !== -1 &&
+            errorMsg.search(" exceeded") !== -1) {
+            console.error("Error getting job information from dbt Cloud. " +
+                errorMsg +
+                ". The dbt Cloud API is taking too long to respond.");
         }
         else {
             console.error("Error getting job information from dbt Cloud. " + errorMsg);
@@ -130,33 +120,39 @@ async function getJobRun(account_id, run_id) {
 async function getArtifacts(account_id, run_id) {
     const res = await dbt_cloud_api.get(`/accounts/${account_id}/runs/${run_id}/artifacts/run_results.json`);
     const run_results = res.data;
-    core.info('Saving artifacts in target directory');
-    const dir = './target';
+    const catalog = await dbt_cloud_api.get(`/accounts/${account_id}/runs/${run_id}/artifacts/catalog.json`);
+    const catalog_data = catalog.data;
+    const manifest = await dbt_cloud_api.get(`/accounts/${account_id}/runs/${run_id}/artifacts/manifest.json`);
+    const manifest_data = manifest.data;
+    core.info("Saving artifacts in target directory");
+    const dir = "./target";
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
     fs.writeFileSync(`${dir}/run_results.json`, JSON.stringify(run_results));
+    fs.writeFileSync(`${dir}/catalog.json`, JSON.stringify(catalog_data));
+    fs.writeFileSync(`${dir}/manifest.json`, JSON.stringify(manifest_data));
 }
 async function executeAction() {
-    const account_id = core.getInput('dbt_cloud_account_id');
-    const job_id = core.getInput('dbt_cloud_job_id');
-    const failure_on_error = core.getBooleanInput('failure_on_error');
+    const account_id = core.getInput("dbt_cloud_account_id");
+    const job_id = core.getInput("dbt_cloud_job_id");
+    const failure_on_error = core.getBooleanInput("failure_on_error");
     const jobRun = await runJob(account_id, job_id);
     const runId = jobRun.data.id;
     core.info(`Triggered job. ${jobRun.data.href}`);
     fs.appendFileSync(process.env.GITHUB_STATE, `dbtCloudRunID=${jobRun.data.id}${os.EOL}`, {
-        encoding: 'utf8'
+        encoding: "utf8",
     });
     let res;
     while (true) {
-        await sleep(parseInt(core.getInput('interval')) * 1000);
+        await sleep(parseInt(core.getInput("interval")) * 1000);
         res = await getJobRun(account_id, runId);
         if (!res) {
             continue;
         }
         const status = run_status[res.data.status];
         core.info(`Run: ${res.data.id} - ${status}`);
-        if (core.getBooleanInput('wait_for_job')) {
+        if (core.getBooleanInput("wait_for_job")) {
             if (res.data.is_complete) {
                 core.info(`job finished with '${status}'`);
                 break;
@@ -182,26 +178,28 @@ async function executeAction() {
             }
         }
     }
-    if (core.getBooleanInput('get_artifacts')) {
+    if (core.getBooleanInput("get_artifacts")) {
         await getArtifacts(account_id, runId);
     }
     return {
-        git_sha: (res === null || res === void 0 ? void 0 : res.data.git_sha) || '',
-        run_id: runId
+        git_sha: (res === null || res === void 0 ? void 0 : res.data.git_sha) || "",
+        run_id: runId,
     };
 }
 async function cleanupAction() {
-    const account_id = core.getInput('dbt_cloud_account_id');
+    const account_id = core.getInput("dbt_cloud_account_id");
     const run_id = process.env.STATE_dbtCloudRunID;
-    if (!run_id)
+    if (!run_id) {
+        core.info("No run ID found in state file. Not cancelling job.");
         return;
+    }
     const res = await getJobRun(account_id, parseInt(run_id));
-    if (res && !res.data.is_complete && core.getBooleanInput('wait_for_job')) {
-        core.info('Cancelling job...');
+    if (res && !res.data.is_complete && core.getBooleanInput("wait_for_job")) {
+        core.info("Cancelling job...");
         await dbt_cloud_api.post(`/accounts/${account_id}/runs/${run_id}/cancel/`);
     }
     else {
-        core.info('Nothing to clean');
+        core.info("Nothing to clean");
     }
 }
 async function main() {
@@ -211,13 +209,14 @@ async function main() {
             const git_sha = outputs.git_sha;
             const run_id = outputs.run_id;
             core.info(`dbt Cloud Job commit SHA is ${git_sha}`);
-            core.setOutput('git_sha', git_sha);
-            core.setOutput('run_id', run_id);
+            core.setOutput("git_sha", git_sha);
+            core.setOutput("run_id", run_id);
         }
         catch (e) {
-            core.setFailed('There has been a problem with running your dbt cloud job:\n' + String(e));
+            core.setFailed("There has been a problem with running your dbt cloud job:\n" +
+                String(e));
             if (e instanceof Error) {
-                core.debug(e.stack || '');
+                core.debug(e.stack || "");
             }
         }
     }
@@ -226,9 +225,10 @@ async function main() {
             await cleanupAction();
         }
         catch (e) {
-            core.error('There has been a problem with cleaning up your dbt cloud job:\n' + String(e));
+            core.error("There has been a problem with cleaning up your dbt cloud job:\n" +
+                String(e));
             if (e instanceof Error) {
-                core.debug(e.stack || '');
+                core.debug(e.stack || "");
             }
         }
     }

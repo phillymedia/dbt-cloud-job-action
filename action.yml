@@ -82,7 +82,6 @@ inputs:
     description: The github pull request id that triggered this job
     required: false
 
-
 outputs:
   git_sha:
     description: "Repository SHA in which dbt Cloud Job ran"
