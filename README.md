@@ -1,8 +1,12 @@
 # dbt Cloud job action
 
-Fork of https://github.com/fal-ai/dbt-cloud-action with additional capabilities as the original repo and action seem inactive.
+Originally a fork of https://github.com/fal-ai/dbt-cloud-action with additional capabilities as the original repo and action seem inactive:
+- adds the ability to cancel jobs
+- adds the ability to provide a GitHub PR ID
+- downloads more artefacts than just `run_results.json`
+- rewritten from JS to TS to improve future maintenance
 
-This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), fetches the `run_results.json`, `manifest.json` and `catalog.json` artifacts, and wait for the results of the job.
+This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), wait for the results of the job and fetch the `run_results.json`, `manifest.json` and `catalog.json` artifacts.
 
 ## Inputs
 
