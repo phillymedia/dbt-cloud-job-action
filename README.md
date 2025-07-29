@@ -7,6 +7,7 @@ Originally a fork of https://github.com/fal-ai/dbt-cloud-action with additional 
 - rewritten from JS to TS to improve future maintenance
 
 This action lets you trigger a job run on [dbt Cloud](https://cloud.getdbt.com), wait for the results of the job and fetch the `run_results.json`, `manifest.json` and `catalog.json` artifacts.
+If your dbt cloud job does not generate docs, set `fetch_catalog: false`
 
 ## Inputs
 

@@ -82,6 +82,11 @@ inputs:
     description: The github pull request id that triggered this job
     required: false
 
+  fetch_catalog:
+    description: Set whether or not to fetch catalog.json after job run.
+    required: false
+    default: "true"
+
 outputs:
   git_sha:
     description: "Repository SHA in which dbt Cloud Job ran"
